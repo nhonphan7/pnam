@@ -1,0 +1,7 @@
+matplotlib
+pandas
+pysr
+scikit-learn
+tbparse
+tensorboard
+tqdm
