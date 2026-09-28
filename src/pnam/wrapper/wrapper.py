@@ -18,7 +18,7 @@ from pnam.trainer.losses import make_penalized_loss_func
 
 
 class PNAMBase:
-    
+
     def __init__(
         self,
         random_state: int = 42,
@@ -104,7 +104,7 @@ class PNAMBase:
         random.seed(self.random_state)
         np.random.seed(self.random_state)
         torch.manual_seed(self.random_state)
-    
+
     def initialize_models(self) -> None:
         self.models = []
         for _ in range(self.num_learners):
@@ -140,14 +140,14 @@ class PNAMBase:
         y: Union[np.ndarray, pd.DataFrame, torch.Tensor]
     ) -> None:
         self.num_inputs = X.shape[1]
-        
+
         self.set_random_state()
         if not self.fitted:
             self.initialize_models()
-        
+
         self.fitted = False
         self.models_to_device(self.device)
-        
+
         self.partial_fit(X, y)
 
     def partial_fit(
@@ -156,8 +156,10 @@ class PNAMBase:
         y: Union[np.ndarray, pd.DataFrame, torch.Tensor]
     ) -> None:
         dataset = PNAMDataset(X, y)
-        self.num_targets = 1 if len(dataset.y.size()) == 1 else dataset.y.size(1)
-        
+        self.num_targets = (
+            1 if len(dataset.y.size()) == 1 else dataset.y.size(1)
+        )
+
         if self.fitted:
             self.X = dataset.X
             self.y = dataset.y
@@ -202,7 +204,7 @@ class PNAMBase:
             early_stop_mode=self.early_stop_mode,
             patience=self.patience
         )
-        
+
         if not self.fitted:
             self.trainer.train_ensemble()
             self.trainer.close()
@@ -221,9 +223,9 @@ class PNAMBase:
             model = checkpointer.load(self.best_checkpoint_suffix)
             model.eval()
             self.models.append(model)
-        
+
         self.fitted = True
-    
+
     def predict(
         self,
         X: Union[np.ndarray, pd.DataFrame, torch.Tensor],
@@ -236,8 +238,8 @@ class PNAMBase:
             self.partial_fit(X, y)
         else:
             raise NotFittedError(
-                'This model instance is not fitted yet. '
-                'Call `fit` with appropriate arguments before using this method.'
+                'This model instance is not fitted yet. Call `fit` with '
+                'appropriate arguments before using this method.'
             )
 
         X_scale_, y_scale_, y_min_ = None, None, None
@@ -259,7 +261,7 @@ class PNAMBase:
             model.linear.weight = torch.nn.Parameter(torch.tensor(
                 proj_mat, dtype=torch.float
             ))
-            
+
         preds, feats_out, feats_in, weight, bias, preds_grad = forward_pass(
             self.X,
             model,
@@ -280,7 +282,7 @@ class PNAMBase:
                 grad_in = torch.stack([grad(
                     torch.sum(preds[:, i]), feats_in, create_graph=True
                 )[0] for i in range(preds.size(1))], dim=1)
-        
+
         predictions = preds
         if self.sobolev and not self.energy:
             predictions = preds_grad
@@ -293,7 +295,10 @@ class PNAMBase:
         if self.metric:
             metric = self.trainer.create_metric()
             self.trainer.update_metric(metric, predictions, y)
-            print(f'{self.trainer.metric_name.title()}: {metric.compute():.10f}')
+            print(
+                f'{self.trainer.metric_name.title()}: '
+                f'{metric.compute():.10f}'
+            )
 
         predictions = predictions.detach().cpu().numpy()
         if self.pnam:
@@ -305,4 +310,6 @@ class PNAMBase:
                 proj_mat = proj_mat.detach().cpu().numpy()
             if self.sobolev:
                 grad_in = grad_in.detach().cpu().numpy()
-        return predictions, feats_out, feats_in, weight, bias, proj_mat, grad_in
+        return (
+            predictions, feats_out, feats_in, weight, bias, proj_mat, grad_in
+        )

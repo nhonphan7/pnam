@@ -40,7 +40,7 @@ if __name__ == '__main__':
 
     train_dataset = datasets.MNIST('../../data', train=True, download=True)
     test_dataset = datasets.MNIST('../../data', train=False)
-    
+
     X_train = train_dataset.data.view(-1, 28 * 28).to(dtype=torch.float)
     X_test = test_dataset.data.view(-1, 28 * 28).to(dtype=torch.float)
     y_train = train_dataset.targets
@@ -54,7 +54,7 @@ if __name__ == '__main__':
     num_outputs = 10
     metric = 'acc'
     sobolev = False
-    
+
     model_idx = 0
     weight_thresh = 0.001
     proj_mat_idx = 400
@@ -107,7 +107,7 @@ if __name__ == '__main__':
         plot_loss_or_metric(
             time, model_idx, metric, semilogy=False, plot_dir=plot_dir
         )
-    
+
     (
         preds_test,
         feats_out_test,
@@ -117,14 +117,6 @@ if __name__ == '__main__':
         proj_mat,
         grad_in_test
     ) = model_pnam.predict(X_test, y_test, model_idx)
-    
-    # _, weight_S, _ = np.linalg.svd(weight)
-    # _, proj_mat_S, _ = np.linalg.svd(proj_mat)
-    # np.save(f'{plot_dir}/weight_S.npy', weight_S)
-    # np.save(f'{plot_dir}/proj_mat_S.npy', proj_mat_S)
-
-    # print((abs(weight) < 1e-4).sum())
-    # print((abs(proj_mat) < 1e-4).sum())
 
     if pnam:
         weight_mean = np.mean(abs(weight), axis=0)
@@ -133,7 +125,7 @@ if __name__ == '__main__':
             for i in range(proj_size):
                 if weight_mean[i] == 0:
                     proj_mat[i] = 0.
-            
+
             proj_mat_mean = np.mean(abs(proj_mat), axis=0)
 
             top_n_acc = []
@@ -159,7 +151,6 @@ if __name__ == '__main__':
                 acc = num / denom
                 top_n_acc.append(acc)
             top_n_acc = np.array(top_n_acc)
-            # np.save(f'{plot_dir}/top_n_acc.npy', top_n_acc)
             plot_top_n_acc(top_n_acc, graph='line', plot_dir=plot_dir)
 
     if pnam:
@@ -172,7 +163,7 @@ if __name__ == '__main__':
             for i in range(proj_size):
                 if weight_zero_mean[i] == 0:
                     proj_mat_zero[i] = 0.
-            
+
             proj_mat_zero[:, sort_indices[:-proj_mat_idx]] = 0.
 
         (

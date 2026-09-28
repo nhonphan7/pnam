@@ -5,11 +5,6 @@ import torch.nn as nn
 from torch.autograd import grad
 
 
-def squeeze_last(tensor: torch.Tensor) -> torch.Tensor:
-    """Squeeze trailing singleton dimension, preserving batch dimension."""
-    return tensor.squeeze(-1) if len(tensor.size()) > 1 else tensor
-
-
 def forward_pass(
     features: torch.Tensor,
     model: nn.Module,
@@ -26,14 +21,14 @@ def forward_pass(
         predictions, fnn_out, fnn_in, weight, bias = model(features)
     else:
         predictions = model(features)
-    
+
     predictions_grad = None
     if sobolev:
         jac = torch.stack([grad(
             torch.sum(predictions[:, i]), features, create_graph=True
         )[0] for i in range(predictions.size(1))], dim=1)
         preds_grad = jac[:, :, 0]
-        
+
         if scale:
             if energy:
                 grad_unscale = preds_grad * X_scale_[0] / y_scale_[:-1]
@@ -44,3 +39,8 @@ def forward_pass(
         else:
             predictions_grad = torch.sum(preds_grad, dim=1, keepdim=True)
     return predictions, fnn_out, fnn_in, weight, bias, predictions_grad
+
+
+def squeeze_last(tensor: torch.Tensor) -> torch.Tensor:
+    """Squeeze trailing singleton dimension, preserving batch dimension."""
+    return tensor.squeeze(-1) if len(tensor.size()) > 1 else tensor

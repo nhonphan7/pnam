@@ -72,7 +72,7 @@ if __name__ == '__main__':
     X_test = torch.tensor(X[test_indices], dtype=torch.float)
     y_train = torch.tensor(y[train_indices], dtype=torch.long)
     y_test = torch.tensor(y[test_indices], dtype=torch.long)
-    
+
     pnam = True
     num_inputs = X.shape[1]
     proj_size = 8
@@ -80,11 +80,11 @@ if __name__ == '__main__':
     num_outputs = num_classes
     metric = 'acc'
     sobolev = False
-    
+
     model_idx = 4
     weight_thresh = 0.01
     proj_mat_idx = 2
-    
+
     model_pnam = PNAMBase(
         random_state=random_state,
         num_learners=10,
@@ -118,7 +118,7 @@ if __name__ == '__main__':
         energy=False,
         patience=0  # Disable early stopping to keep last-epoch model
     )
-    
+
     model_pnam.fit(X_train, y_train)
     # model_pnam.load_checkpoints(f'{time}/pnam')
 
@@ -153,7 +153,7 @@ if __name__ == '__main__':
             plot_dir=plot_dir,
             title='weight'
         )
-        
+
         weight_mean = np.mean(abs(weight), axis=0)
         plot_mean(
             weight_mean,
@@ -166,7 +166,7 @@ if __name__ == '__main__':
             for i in range(proj_size):
                 if weight_mean[i] == 0:
                     proj_mat[i] = 0.
-            
+
             plot_weight(
                 proj_mat,
                 color=None,
@@ -175,7 +175,7 @@ if __name__ == '__main__':
                 plot_dir=plot_dir,
                 title='proj_mat'
             )
-            
+
             proj_mat_mean = np.mean(abs(proj_mat), axis=0)
             plot_mean(
                 proj_mat_mean,
@@ -228,7 +228,7 @@ if __name__ == '__main__':
             for i in range(proj_size):
                 if weight_zero_mean[i] == 0:
                     proj_mat_zero[i] = 0.
-            
+
             proj_mat_zero[:, sort_indices[:-proj_mat_idx]] = 0.
             plot_weight(
                 proj_mat_zero,
@@ -253,7 +253,7 @@ if __name__ == '__main__':
             for j in range(num_networks):
                 if weight_zero[i, j] == 0:
                     continue
-                    
+
                 plot_g_vs_z(
                     feats_in_test,
                     feats_out_test,

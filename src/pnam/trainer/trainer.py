@@ -70,13 +70,13 @@ class Trainer:
         self.patience = patience
         # Disable `tqdm` if concurrency > 1
         self.disable_tqdm = self.n_jobs not in (None, 1)
-        
+
         self.log_dir = log_dir
         if not self.log_dir:
             self.log_dir = 'output'
 
         self.best_checkpoint_suffix = 'best'
-        
+
         self.X_scale_, self.X_min_ = None, None
         self.y_scale_, self.y_min_ = None, None
         if self.scale and self.sobolev:
@@ -133,7 +133,7 @@ class Trainer:
             predictions = preds_grad
         elif self.sobolev and self.energy:
             predictions = torch.cat((preds, preds_grad), dim=-1)
-        
+
         predictions, targets = squeeze_last(predictions), squeeze_last(targets)
         loss = self.criterion(predictions, targets, model, fnn_out, weight)
         self.update_metric(metric, predictions, targets)
@@ -152,7 +152,7 @@ class Trainer:
         optimizer: optim.Optimizer,
         metric: Metric
     ) -> Tuple[torch.Tensor, float]:
-        """Perform an epoch of gradient descent optimization on `DataLoader`."""
+        """Perform an epoch of gradient descent on `DataLoader`."""
         model.train()
         loss = 0.
         with tqdm(dataloader, leave=False, disable=self.disable_tqdm) as pbar:
@@ -220,7 +220,7 @@ class Trainer:
         with tqdm(dataloader, leave=False, disable=self.disable_tqdm) as pbar:
             for batch in pbar:
                 # Accumulate loss in dataset
-                # Gradients are required in evaluation only for Sobolev constraint
+                # Only Sobolev constraint requires gradients in evaluation
                 if self.sobolev:
                     step_loss = self.evaluate_step(batch, model, metric)
                 else:
@@ -249,7 +249,10 @@ class Trainer:
         )
 
     def train_learner(
-        self, model_idx: int, train_indices: np.ndarray, val_indices: np.ndarray
+        self,
+        model_idx: int,
+        train_indices: np.ndarray,
+        val_indices: np.ndarray
     ) -> nn.Module:
         # Set random seed for each process to guarantee reproducibility
         torch.manual_seed(self.random_state + model_idx)
@@ -257,7 +260,7 @@ class Trainer:
         model = self.models[model_idx]
         train_subset = Subset(self.dataset, train_indices)
         val_subset = Subset(self.dataset, val_indices)
-        
+
         train_dl = DataLoader(
             train_subset,
             batch_size=self.batch_size,
@@ -277,7 +280,7 @@ class Trainer:
         checkpointer = Checkpointer(log_dir=log_subdir)
 
         optimizer = torch.optim.Adam(model.parameters(), lr=self.lr)
-        
+
         scheduler = torch.optim.lr_scheduler.StepLR(
             optimizer, step_size=self.decay_step, gamma=self.decay_rate
         )
@@ -320,9 +323,8 @@ class Trainer:
                 loss_train, metric_train = self.train_epoch(
                     train_dl, model, optimizer, metric
                 )
-                writer.write({
-                    'loss_train_epoch': loss_train.detach().cpu().numpy().item()
-                }, epoch)
+                loss_train_epoch = loss_train.detach().cpu().numpy().item()
+                writer.write({'loss_train_epoch': loss_train_epoch}, epoch)
                 if metric:
                     writer.write({
                         f'{self.metric_name}_train_epoch': metric_train
@@ -330,10 +332,11 @@ class Trainer:
 
                 # Evaluate model on entire validation dataset
                 # Write to TensorBoard
-                loss_val, metric_val = self.evaluate_epoch(val_dl, model, metric)
-                writer.write({
-                    'loss_val_epoch': loss_val.detach().cpu().numpy().item()
-                }, epoch)
+                loss_val, metric_val = self.evaluate_epoch(
+                    val_dl, model, metric
+                )
+                loss_val_epoch = loss_val.detach().cpu().numpy().item()
+                writer.write({'loss_val_epoch': loss_val_epoch}, epoch)
                 if metric:
                     writer.write({
                         f'{self.metric_name}_val_epoch': metric_val
@@ -388,7 +391,7 @@ class Trainer:
     def close(self) -> None:
         del self.dataset
         gc.collect()
-    
+
     def create_metric(self) -> Metric:
         if not self.metric_name:
             return None

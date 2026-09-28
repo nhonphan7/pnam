@@ -10,9 +10,11 @@ class FourierFeature(torch.nn.Module):
 
     def __init__(self, std: float, num_inputs: int, num_outputs: int) -> None:
         super(FourierFeature, self).__init__()
-        gamma = 2. * torch.pi * torch.normal(0., std, (num_inputs, num_outputs))
+        gamma = 2. * torch.pi * torch.normal(
+            0., std, (num_inputs, num_outputs)
+        )
         self.gamma = torch.nn.Parameter(gamma, requires_grad=False)
-    
+
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         outputs = inputs @ self.gamma
         return torch.cat((torch.cos(outputs), torch.sin(outputs)), dim=-1)
@@ -46,7 +48,7 @@ class FeatureNN(torch.nn.Module):
         self.hidden_sizes = hidden_sizes
         self.num_outputs = num_outputs
         self.activation = activation
-        
+
         self.dropout = nn.Dropout(p=dropout)
 
         layers = []

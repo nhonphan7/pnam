@@ -50,7 +50,7 @@ def reg_penalty(
         gram = proj_mat.T @ proj_mat
         off_diag = gram - torch.diag(torch.diagonal(gram))
         return torch.sqrt(torch.sum(off_diag**2)) / proj_mat.size(0)
-    
+
     def proj_sparsity(proj_mat: torch.Tensor) -> torch.Tensor:
         """Penalize L1 norm of projection matrix."""
         return torch.sum(torch.abs(proj_mat)) / proj_mat.size(0)
@@ -69,7 +69,7 @@ def reg_penalty(
         for x in model.feature_nns.parameters():
             l2_loss += torch.sum(x**2)
         return torch.sqrt(l2_loss) / fnn_out.size(0)
-    
+
     # Get projection matrix
     proj_mat = None
     if hasattr(model, 'linear'):
@@ -163,7 +163,7 @@ def make_penalized_loss_func(
             verbose
         )
         return loss
-    
+
     if not loss_func:
         if regression:
             loss_func = F.mse_loss

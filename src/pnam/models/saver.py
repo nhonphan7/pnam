@@ -34,7 +34,8 @@ class Checkpointer:
         constructor = ckpt['class']
         constructor_args = inspect.getfullargspec(constructor).args
         args = {
-            k: v for k, v in ckpt['attributes'].items() if k in constructor_args
+            k: v for k, v in ckpt['attributes'].items()
+            if k in constructor_args
         }
         model = constructor(**args)
         model.load_state_dict(ckpt['model_state_dict'])

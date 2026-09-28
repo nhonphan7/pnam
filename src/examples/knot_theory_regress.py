@@ -101,14 +101,14 @@ if __name__ == '__main__':
     num_outputs = 1
     metric = None
     sobolev = False
-    
+
     model_idx = 9
     weight_thresh = 0.01
     proj_mat_idx = 3
-    
+
     sr = True
     num_sr_points = 1000
-    
+
     model_pnam = PNAMBase(
         random_state=random_state,
         num_learners=10,
@@ -142,7 +142,7 @@ if __name__ == '__main__':
         energy=False,
         patience=0  # Disable early stopping to keep last-epoch model
     )
-    
+
     model_pnam.fit(X_train, y_train)
     # model_pnam.load_checkpoints(f'{time}/pnam')
 
@@ -181,7 +181,7 @@ if __name__ == '__main__':
             plot_dir=plot_dir,
             title='weight'
         )
-        
+
         weight_mean = np.mean(abs(weight), axis=0)
         plot_mean(
             weight_mean,
@@ -194,7 +194,7 @@ if __name__ == '__main__':
             for i in range(proj_size):
                 if weight_mean[i] == 0:
                     proj_mat[i] = 0.
-            
+
             plot_weight(
                 proj_mat,
                 color=None,
@@ -203,7 +203,7 @@ if __name__ == '__main__':
                 plot_dir=plot_dir,
                 title='proj_mat'
             )
-            
+
             proj_mat_mean = np.mean(abs(proj_mat), axis=0)
             plot_mean(
                 proj_mat_mean,
@@ -238,7 +238,7 @@ if __name__ == '__main__':
                 top_n_acc.append(acc)
             top_n_acc = np.array(top_n_acc)
             plot_top_n_acc(top_n_acc, graph='bar', plot_dir=plot_dir)
-    
+
     if pnam:
         weight_zero = np.copy(weight)
         weight_zero[abs(weight_zero) < weight_thresh] = 0.
@@ -258,7 +258,7 @@ if __name__ == '__main__':
             for i in range(proj_size):
                 if weight_zero_mean[i] == 0:
                     proj_mat_zero[i] = 0.
-            
+
             proj_mat_zero[:, sort_indices[:-proj_mat_idx]] = 0.
             plot_weight(
                 proj_mat_zero,
@@ -364,12 +364,12 @@ if __name__ == '__main__':
 
         if sr:
             eqs = pd.read_csv(f'{time}/sr/{model_idx}/equations.csv')
-        
+
         for i in range(num_outputs):
             for j in range(num_networks):
                 if weight_zero[i, j] == 0:
                     continue
-                
+
                 if sr:
                     eq = eqs[(eqs['output'] == i + 1) & (eqs['z'] == j + 1)]
                     g_feat = eq['g_sympy'].to_numpy()[0]
@@ -380,7 +380,7 @@ if __name__ == '__main__':
                         X_scale_=X_std,
                         X_mean_=X_mean
                     )
-                    
+
                     g_feat = sympy.simplify(sympy.sympify(g_feat))
                     g_feat = g_feat.replace(
                         lambda x: isinstance(x, sympy.Float),
@@ -404,7 +404,7 @@ if __name__ == '__main__':
                     prime=False,
                     plot_dir=plot_dir
                 )
-        
+
         if sr:
             f = combine_eqs(
                 time,

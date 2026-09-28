@@ -80,7 +80,7 @@ if __name__ == '__main__':
 
     data_path = '../../data/phase_field.csv'
     df = pd.read_csv(data_path)
-    
+
     X_labels = ['Strain', 'Xi', 'Nabla Xi']
     y_labels = ['W', 'f', 'Stress']
 
@@ -90,7 +90,7 @@ if __name__ == '__main__':
     #     X_labels=X_labels,
     #     y_labels=y_labels
     # )
-    
+
     X_scaler = MinMaxScaler()
     df[X_labels] = X_scaler.fit_transform(df[X_labels])
     y_scaler = MinMaxScaler()
@@ -100,8 +100,10 @@ if __name__ == '__main__':
     df_train, df_test = train_test_split(
         df, test_size=0.2, random_state=random_state
     )
-    X_train, X_test = df_train[X_labels].to_numpy(), df_test[X_labels].to_numpy()
-    y_train, y_test = df_train[y_labels].to_numpy(), df_test[y_labels].to_numpy()
+    X_train = df_train[X_labels].to_numpy()
+    X_test = df_test[X_labels].to_numpy()
+    y_train = df_train[y_labels].to_numpy()
+    y_test = df_test[y_labels].to_numpy()
 
     pnam = True
     num_inputs = X_train.shape[1]
@@ -111,7 +113,7 @@ if __name__ == '__main__':
     metric = None
     scale = True
     sobolev = True
-    
+
     model_idx = 0
     weight_thresh = 0.05
     proj_mat_thresh = 0.05
@@ -158,7 +160,7 @@ if __name__ == '__main__':
         energy=True,
         patience=50
     )
-    
+
     model_pnam.fit(X_train, y_train)
     # model_pnam.load_checkpoints(f'{time}/pnam')
 
@@ -210,7 +212,7 @@ if __name__ == '__main__':
             plot_dir=plot_dir,
             title='weight_mean'
         )
-        
+
         if proj_size > 0:
             for i in range(proj_size):
                 if weight_mean[i] == 0:
@@ -252,7 +254,7 @@ if __name__ == '__main__':
             for i in range(proj_size):
                 if weight_zero_mean[i] == 0:
                     proj_mat_zero[i] = 0.
-            
+
             proj_mat_zero[abs(proj_mat_zero) < proj_mat_thresh] = 0.
             plot_weight(
                 proj_mat_zero,
@@ -401,12 +403,12 @@ if __name__ == '__main__':
 
         if sr:
             eqs = pd.read_csv(f'{time}/sr/{model_idx}/equations.csv')
-            
+
         for i in range(num_outputs):
             for j in range(num_networks):
                 if weight_zero[i, j] == 0:
                     continue
-                    
+
                 if sr:
                     eq = eqs[(eqs['output'] == i + 1) & (eqs['z'] == j + 1)]
                     g_feat = eq['g_sympy'].to_numpy()[0]
@@ -417,7 +419,7 @@ if __name__ == '__main__':
                         X_scale_=X_scaler.scale_,
                         X_min_=X_scaler.min_
                     )
-                    
+
                     g_feat = sympy.simplify(sympy.sympify(g_feat))
                     g_feat = g_feat.replace(
                         lambda x: isinstance(x, sympy.Float),
@@ -431,7 +433,7 @@ if __name__ == '__main__':
                     print(g_feat)
                     print('g(x):')
                     print(g_input)
-                    
+
                 plot_g_vs_z(
                     feats_in_test,
                     feats_out_test,
@@ -458,7 +460,9 @@ if __name__ == '__main__':
                 np.sum(g_sr, axis=-1) + bias - y_scaler.min_[:-1]
             ) / y_scaler.scale_[:-1]
             jac = gp_sr @ proj_mat_zero if proj_size > 0 else gp_sr
-            preds_grad = jac[:, :, 0] * X_scaler.scale_[0] / y_scaler.scale_[:-1]
+            preds_grad = (
+                jac[:, :, 0] * X_scaler.scale_[0] / y_scaler.scale_[:-1]
+            )
             preds[:, 2] = np.sum(preds_grad, axis=1)
             loss = sk_metrics.mean_squared_error(
                 y_test, preds * y_scaler.scale_ + y_scaler.min_

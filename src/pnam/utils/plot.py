@@ -99,7 +99,9 @@ def plot_weight(
         norm = colors.Normalize(vmin=min_weight, vmax=0.)
     else:
         colormap = mpl.colormaps['RdBu_r'].resampled(256)
-        norm = colors.TwoSlopeNorm(vcenter=0., vmin=min_weight, vmax=max_weight)
+        norm = colors.TwoSlopeNorm(
+            vcenter=0., vmin=min_weight, vmax=max_weight
+        )
     if color:
         colormap = mpl.colormaps[color].resampled(256)
     if max_weight <= 0:
@@ -135,7 +137,6 @@ def plot_weight(
 def plot_mean(
     mean: np.ndarray, labels: list, plot_dir: str = None, title: str = None
 ) -> None:
-    # Copy labels to avoid modifying caller's list
     labels = list(labels)
     sort_indices = np.argsort(mean)[::-1]
     for i in range(mean.shape[0]):

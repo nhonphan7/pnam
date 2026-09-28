@@ -81,7 +81,7 @@ class PNAM(torch.nn.Module):
                 bias=False
             )
             self.num_networks = self.proj_size
-        
+
         # Build `FeatureNN`
         self.feature_nns = nn.ModuleList([FeatureNN(
             std=self.std,

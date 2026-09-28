@@ -16,11 +16,11 @@ def fit(
 ) -> Tuple[str, sympy.Function, sympy.Function, sympy.Function]:
     if len(X.shape) == 1:
         X = np.expand_dims(X, axis=-1)
-    
+
     model_sr.fit(X, y, weights=yp, variable_names=[f'z_{feat_comp}'])
     g_latex = model_sr.latex(precision=3)
     g_sympy = model_sr.sympy()
-    
+
     z = sympy.symbols(f'z_{feat_comp}')
     gp_sympy = sympy.diff(g_sympy, z)
     gpp_sympy = sympy.diff(gp_sympy, z)
@@ -41,7 +41,7 @@ def predict(
     g_lamb = sympy.lambdify(z, g_sympy)
     gp_lamb = sympy.lambdify(z, gp_sympy)
     gpp_lamb = sympy.lambdify(z, gpp_sympy)
-    
+
     g_pred = g_lamb(X)
     gp_pred = gp_lamb(X)
     gpp_pred = gpp_lamb(X)
@@ -95,7 +95,9 @@ def train_or_evaluate_all(
                     model_sr
                 )
             else:
-                df_row = df[(df['output'] == out_comp) & (df['z'] == feat_comp)]
+                df_row = df[
+                    (df['output'] == out_comp) & (df['z'] == feat_comp)
+                ]
                 g_sympy = df_row['g_sympy'].to_numpy()[0]
 
             g_pred, gp_pred, gpp_pred, loss = predict(
@@ -120,7 +122,7 @@ def train_or_evaluate_all(
                     gpp_sympy,
                     loss
                 ])
-    
+
     if train or not os.path.exists(data_path):
         df = pd.DataFrame(
             data,
@@ -228,7 +230,7 @@ def combine_eqs(
     y_min_: np.ndarray = None,
     y_mean_: np.ndarray = None,
     simplify: bool = True
-) -> sympy.Function:    
+) -> sympy.Function:
     df = pd.read_csv(f'{time}/sr/{model_idx}/equations.csv')
 
     f = ''
@@ -263,15 +265,15 @@ def evaluate_eq(
     eq: sympy.Function
 ) -> Tuple[str, np.ndarray]:
     eq_latex = sympy.latex(eq)
-    
+
     feat_indices = []
     for i in range(proj_mat.shape[0]):
         if weight[out_idx, i] == 0:
             continue
         feat_indices.append(i)
-    
+
     proj_mat_mean = np.mean(abs(proj_mat[feat_indices]), axis=0)
-    
+
     input_indices = []
     for i in range(proj_mat_mean.shape[0]):
         if proj_mat_mean[i] == 0:

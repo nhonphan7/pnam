@@ -31,7 +31,9 @@ class Accuracy(Metric):
 
     def update(self, predictions: torch.Tensor, targets: torch.Tensor) -> None:
         # TODO: Exception handling/input checking
-        num_outputs = 1 if len(predictions.size()) == 1 else predictions.size(1)
+        num_outputs = (
+            1 if len(predictions.size()) == 1 else predictions.size(1)
+        )
         num_targets = 1 if len(targets.size()) == 1 else targets.size(1)
         if num_outputs == num_targets:
             predictions = torch.round(torch.sigmoid(predictions))
@@ -41,7 +43,6 @@ class Accuracy(Metric):
         targets = targets.detach().cpu().numpy()
 
         self.num += (predictions == targets).sum()
-        # Count elements rather than rows to average over multilabel outputs
         self.denom += predictions.size
         self.updated = True
 
@@ -65,7 +66,9 @@ class AUC(Metric):
         self.updated = False
 
     @abstractmethod
-    def score_func(self, predictions: np.ndarray, targets: np.ndarray) -> float:
+    def score_func(
+        self, predictions: np.ndarray, targets: np.ndarray
+    ) -> float:
         pass
 
     def update(self, predictions: torch.Tensor, targets: torch.Tensor) -> None:
@@ -78,7 +81,7 @@ class AUC(Metric):
         if not self.updated:
             # TODO: Find appropriate exception
             raise Exception()
-        
+
         predictions = torch.cat(self.predictions).detach().cpu().numpy()
         targets = torch.cat(self.targets).detach().cpu().numpy()
         return self.score_func(predictions, targets)
@@ -94,7 +97,9 @@ class AUROC(AUC):
     def __init__(self) -> None:
         super(AUROC, self).__init__()
 
-    def score_func(self, predictions: np.ndarray, targets: np.ndarray) -> float:
+    def score_func(
+        self, predictions: np.ndarray, targets: np.ndarray
+    ) -> float:
         return sk_metrics.roc_auc_score(targets, predictions)
 
 
@@ -103,7 +108,9 @@ class AveragePrecision(AUC):
     def __init__(self) -> None:
         super(AveragePrecision, self).__init__()
 
-    def score_func(self, predictions: np.ndarray, targets: np.ndarray) -> float:
+    def score_func(
+        self, predictions: np.ndarray, targets: np.ndarray
+    ) -> float:
         return sk_metrics.average_precision_score(targets, predictions)
 
 
@@ -120,10 +127,9 @@ class MeanError(Metric):
 
     def update(self, predictions: torch.Tensor, targets: torch.Tensor) -> None:
         # TODO: Exception handling/input checking
-        predictions = predictions.detach().cpu().numpy() 
+        predictions = predictions.detach().cpu().numpy()
         targets = targets.detach().cpu().numpy()
         self.sum_of_errors += self.distance_func(predictions, targets)
-        # Count elements rather than rows to average over multiple outputs
         self.num_examples += predictions.size
         self.updated = True
 
@@ -151,7 +157,7 @@ class MeanSquaredError(MeanError):
 
 
 class MeanAbsoluteError(MeanError):
-    
+
     def __init__(self) -> None:
         super(MeanAbsoluteError, self).__init__()
 
