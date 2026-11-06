@@ -24,13 +24,13 @@ class PNAMDataset(torch.utils.data.Dataset):
             y = y.to_numpy()
 
         if isinstance(X, np.ndarray):
-            self.X = torch.tensor(X, dtype=torch.float, requires_grad=True)
+            self.X = torch.tensor(X, dtype=torch.float)
         elif isinstance(X, torch.Tensor):
-            self.X = X
+            self.X = X.detach().to(dtype=torch.float)
         if isinstance(y, np.ndarray):
             self.y = torch.tensor(y, dtype=torch.float)
         elif isinstance(y, torch.Tensor):
-            self.y = y
+            self.y = y.detach().to(dtype=torch.float)
 
     def __len__(self) -> int:
         return len(self.X)

@@ -30,7 +30,6 @@ class Accuracy(Metric):
         self.updated = False
 
     def update(self, predictions: torch.Tensor, targets: torch.Tensor) -> None:
-        # TODO: Exception handling/input checking
         num_outputs = (
             1 if len(predictions.size()) == 1 else predictions.size(1)
         )
@@ -48,8 +47,10 @@ class Accuracy(Metric):
 
     def compute(self) -> float:
         if not self.updated:
-            # TODO: Find appropriate exception
-            raise Exception()
+            raise RuntimeError(
+                'This metric is not updated yet. Call `update` before '
+                '`compute`.'
+            )
         return self.num / self.denom
 
     def reset(self) -> None:
@@ -72,15 +73,16 @@ class AUC(Metric):
         pass
 
     def update(self, predictions: torch.Tensor, targets: torch.Tensor) -> None:
-        # TODO: Exception handling/input checking
         self.predictions.append(predictions)
         self.targets.append(targets)
         self.updated = True
 
     def compute(self) -> float:
         if not self.updated:
-            # TODO: Find appropriate exception
-            raise Exception()
+            raise RuntimeError(
+                'This metric is not updated yet. Call `update` before '
+                '`compute`.'
+            )
 
         predictions = torch.cat(self.predictions).detach().cpu().numpy()
         targets = torch.cat(self.targets).detach().cpu().numpy()
@@ -126,7 +128,6 @@ class MeanError(Metric):
         pass
 
     def update(self, predictions: torch.Tensor, targets: torch.Tensor) -> None:
-        # TODO: Exception handling/input checking
         predictions = predictions.detach().cpu().numpy()
         targets = targets.detach().cpu().numpy()
         self.sum_of_errors += self.distance_func(predictions, targets)
@@ -135,8 +136,10 @@ class MeanError(Metric):
 
     def compute(self) -> float:
         if not self.updated:
-            # TODO: Find appropriate exception
-            raise Exception()
+            raise RuntimeError(
+                'This metric is not updated yet. Call `update` before '
+                '`compute`.'
+            )
         return self.sum_of_errors / self.num_examples
 
     def reset(self) -> None:

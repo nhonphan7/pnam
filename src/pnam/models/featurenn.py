@@ -55,6 +55,10 @@ class FeatureNN(torch.nn.Module):
 
         # First layer
         if self.std > 0:
+            if self.hidden_sizes[0] % 2 != 0:
+                raise ValueError(
+                    'First hidden size must be even when `std` is positive.'
+                )
             self.fourier = FourierFeature(
                 std=self.std,
                 num_inputs=self.num_inputs,
@@ -84,7 +88,7 @@ class FeatureNN(torch.nn.Module):
     def forward(self, inputs: torch.Tensor) -> torch.Tensor:
         """Compute `FeatureNN` outputs."""
         outputs = inputs
-        if self.num_inputs == 1:
+        if self.num_inputs == 1 and len(outputs.size()) == 1:
             outputs = outputs.unsqueeze(1)
         if self.std > 0:
             outputs = self.fourier(outputs)

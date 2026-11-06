@@ -55,7 +55,7 @@ and
 
 `knot_theory_regress.py` or `knot_theory_regress.ipynb`.
 
-To reproduce the results in Table A.3, see
+To reproduce the results in Table A.5, see
 
 `knot_theory_total_acc.ipynb`.
 

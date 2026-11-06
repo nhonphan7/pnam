@@ -16,6 +16,8 @@ def forward_pass(
     y_scale_: torch.Tensor,
     y_min_: torch.Tensor
 ) -> Tuple[torch.Tensor, ...]:
+    if sobolev and not features.requires_grad:
+        features.requires_grad_(True)
     fnn_out, fnn_in, weight, bias = None, None, None, None
     if pnam:
         predictions, fnn_out, fnn_in, weight, bias = model(features)

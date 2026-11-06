@@ -244,9 +244,10 @@ class PNAMBase:
 
         X_scale_, y_scale_, y_min_ = None, None, None
         if self.scale and self.sobolev:
-            X_scaler = load(f'{self.log_dir}/scaler/X_scaler.pkl')
+            log_dir = self.log_dir if self.log_dir else 'output'
+            X_scaler = load(f'{log_dir}/scaler/X_scaler.pkl')
             X_scale_ = torch.tensor(X_scaler.scale_, dtype=torch.float)
-            y_scaler = load(f'{self.log_dir}/scaler/y_scaler.pkl')
+            y_scaler = load(f'{log_dir}/scaler/y_scaler.pkl')
             y_scale_ = torch.tensor(y_scaler.scale_, dtype=torch.float)
             y_min_ = torch.tensor(y_scaler.min_, dtype=torch.float)
 

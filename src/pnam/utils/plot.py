@@ -28,7 +28,9 @@ def plot_vars(
             plt.grid()
             plt.tight_layout()
             if plot_dir:
-                plt.savefig(f'{plot_dir}/{y_labels[i]}_vs_{X_labels[j]}.png')
+                y_name = y_labels[i] if y_labels else f'y{i}'
+                X_name = X_labels[j] if X_labels else f'x{j}'
+                plt.savefig(f'{plot_dir}/{y_name}_vs_{X_name}.png')
                 plt.close()
             else:
                 plt.show()

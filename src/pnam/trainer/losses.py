@@ -129,6 +129,13 @@ def reg_penalty(
     return reg_loss
 
 
+def cross_entropy(
+    predictions: torch.Tensor, targets: torch.Tensor
+) -> torch.Tensor:
+    """Compute cross entropy with targets cast to class indices."""
+    return F.cross_entropy(predictions, targets.long())
+
+
 def make_penalized_loss_func(
     loss_func: Callable,
     regression: bool,
@@ -171,5 +178,5 @@ def make_penalized_loss_func(
             if num_outputs == num_targets:
                 loss_func = F.binary_cross_entropy_with_logits
             else:
-                loss_func = F.cross_entropy
+                loss_func = cross_entropy
     return penalized_loss_func
